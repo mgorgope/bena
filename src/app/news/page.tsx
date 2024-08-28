@@ -7,11 +7,23 @@ import { getDatabase, ref, set, get, update } from 'firebase/database';
 import { initializeApp } from 'firebase/app';
 import { useUserData } from '../context';
 import { useRouter } from 'next/navigation'; 
-// import Card from '../card-component'
-// import {CardProps, NewsArticle} from '../type/iCardProps'
+import Card from '../card-component'
+import {CardProps, NewsArticle} from '../type/iCardProps'
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import { IconButton } from '@mui/material';
+
+
+
+function checkEnv(
+  value: string | undefined,
+  name: string,
+): asserts value is string {
+  if (value == null) {
+    throw new Error(`Missing environment variable: ${name}`);
+  }
+}
+
 
 const firebaseConfig = {
     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -29,22 +41,22 @@ const database = getDatabase(app);
 
 
 
-interface CardProps {
-    id: number;
-    text: string;
-    isRead: boolean;
-    onClick: () => void;
-    onButtonClick: () => void;
-    newsData?: NewsArticle; 
+// interface CardProps {
+//     id: number;
+//     text: string;
+//     isRead: boolean;
+//     onClick: () => void;
+//     onButtonClick: () => void;
+//     newsData?: NewsArticle; 
     
-    // New prop for displaying API data
-  }
+//     // New prop for displaying API data
+//   }
 
-  interface NewsArticle {
-    title: string;
-    description: string;
-    url: string;
-  }
+//   interface NewsArticle {
+//     title: string;
+//     description: string;
+//     url: string;
+//   }
   
   const truncateUrl = (url: string, maxLength: number) => {
     return url.length > maxLength ? url.slice(0, maxLength) + '... full article' : url;
@@ -54,35 +66,35 @@ const generateUniqueId = (url: string) => {
     return url.replace(/[.\#\$\[\]\/]/g, '_');
 };                                                                      
 
-  const Card: React.FC<CardProps> = ({ id, text, isRead, onClick, onButtonClick, newsData }) => {
-      return (
-        <div className={`card ${isRead ? 'read' : ''}`} onClick={onClick}>
-            <span>{text}</span>
-            {newsData && (
-                <div className="news-data">
-                    <h3>{newsData.title}</h3>
-                    <p>{newsData.description}</p>
-                    <p>
-                    <a href={newsData.url} target="_blank"  rel="noopener noreferrer"  style={{ backgroundColor: '#f0f0f0', padding: '5px', borderRadius: '5px' }} >
-                            {truncateUrl(newsData.url, 30)}
-                        </a>
-                    </p>
-                </div>
-            )}
-        <IconButton
-          onClick={(e) => {
-            e.stopPropagation();
-            onButtonClick();
-          }}
-          color="primary"
-          aria-label="Mark as read"
-        >
-          {isRead ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
-        </IconButton>
-      </div>
+  // const Card: React.FC<CardProps> = ({ id, text, isRead, onClick, onButtonClick, newsData }) => {
+  //     return (
+  //       <div className={`card ${isRead ? 'read' : ''}`} onClick={onClick}>
+  //           <span>{text}</span>
+  //           {newsData && (
+  //               <div className="news-data">
+  //                   <h3>{newsData.title}</h3>
+  //                   <p>{newsData.description}</p>
+  //                   <p>
+  //                   <a href={newsData.url} target="_blank"  rel="noopener noreferrer"  style={{ backgroundColor: '#f0f0f0', padding: '5px', borderRadius: '5px' }} >
+  //                           {truncateUrl(newsData.url, 30)}
+  //                       </a>
+  //                   </p>
+  //               </div>
+  //           )}
+  //       <IconButton
+  //         onClick={(e) => {
+  //           e.stopPropagation();
+  //           onButtonClick();
+  //         }}
+  //         color="primary"
+  //         aria-label="Mark as read"
+  //       >
+  //         {isRead ? <CheckBoxIcon /> : <CheckBoxOutlineBlankIcon />}
+  //       </IconButton>
+  //     </div>
   
-    );
-  };
+  //   );
+  // };
   
   const App: React.FC = () => {
     const [readCards, setReadCards] = useState<Set<number>>(new Set());
@@ -96,8 +108,8 @@ const generateUniqueId = (url: string) => {
 
     useEffect(() => {
         const fetchNewsData = async () => {
-            const apiKey = process.env.NEXT_PUBLIC_NEWS_API_KEY_url;
-            const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`;        
+          const apiKey = checkEnv(process.env.NEXT_PUBLIC_NEWS_API_KEY_url, 'NEXT_PUBLIC_NEWS_API_KEY');
+          const url = `https://newsapi.org/v2/top-headlines?country=us&apiKey=${apiKey}`;        
                 try {
                 const response = await fetch(url);
                 const data = await response.json();
